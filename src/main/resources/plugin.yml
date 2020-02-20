@@ -1,3 +1,12 @@
 main: ${project.groupId}.colorRoyal.${project.artifactId}
 name: ${project.artifactId}
 version: ${project.version}
+commands:
+ start:
+   usage: /<command>
+   permission: op
+   permission-message: "§4このコマンドを実行するための権限がありません！"
+ stop:
+   usage: /<command>
+   permission: op
+   permission-message: "§4このコマンドを実行するための権限がありません！"
