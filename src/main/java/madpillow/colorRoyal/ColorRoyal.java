@@ -2,24 +2,26 @@ package madpillow.colorRoyal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
+
 import lombok.Getter;
 
 public class ColorRoyal extends JavaPlugin {
 	@Getter
-	private static Plugin plugin;
+	private static ColorRoyal plugin;
+	@Getter
+	public boolean isGameing = false;
 
 	@Getter
 	private List<GamePlayer> gamePlayerList;
@@ -32,6 +34,11 @@ public class ColorRoyal extends JavaPlugin {
 		this.gamePlayerList = new ArrayList<>();
 		this.teamList = new ArrayList<>();
 
+		Commands commands = new Commands();
+		getCommand("start").setExecutor(commands);
+		getCommand("stop").setExecutor(commands);
+
+		Bukkit.getPluginManager().registerEvents(new GameEvent(), this);
 		initTeam();
 	}
 
@@ -52,42 +59,61 @@ public class ColorRoyal extends JavaPlugin {
 			Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
 			if (board.getTeam(teamName) != null) {
 				MemorySection teamSection = (MemorySection) set.getValue();
-				teamList.add(
-						new GameTeam(board.getTeam(teamName), new Color(teamSection.getInt("R"),
-								teamSection.getInt("G"), teamSection.getInt("B"))));
+				teamList.add(new GameTeam(board.getTeam(teamName), teamSection.getInt("Color")));
 
 				continue;
 			}
 
 			Team team = board.registerNewTeam(teamName);
 			MemorySection teamSection = (MemorySection) set.getValue();
-			teamList.add(new GameTeam(team, new Color(teamSection.getInt("R"),
-					teamSection.getInt("G"), teamSection.getInt("B"))));
+			teamList.add(new GameTeam(team, teamSection.getInt("Color")));
 		}
 	}
 
 	private void createTeamConfig() {
 		FileConfiguration configuration = getConfig();
-		Map<String, Integer> RGB = new LinkedHashMap<>();
-		RGB.put("R", 255);
-		RGB.put("G", 0);
-		RGB.put("B", 0);
-
-		Map<String, Map<String, Integer>> teams = new HashMap<>();
-		teams.put("Red", RGB);
+		Map<String, Integer> teams = new HashMap<>();
+		teams.put("Red", 16711680);
 
 		configuration.set("Team", teams);
 		saveConfig();
 	}
 
 	public void start() {
+		if (isGameing) {
+			Bukkit.broadcastMessage("すでに開始しています");
+			return;
+		}
+
 		int teamIndex = 0;
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			gamePlayerList.add(new GamePlayer(player, teamList.get(teamIndex)));
+			teamList.get(teamIndex).getTeam().addEntry(player.getName());
+
 			teamIndex++;
 			if (teamIndex >= teamList.size()) {
 				teamIndex = 0;
 			}
 		}
+
+		isGameing = true;
+	}
+
+	public void stop() {
+		if (!isGameing) {
+			Bukkit.broadcastMessage("まだ開始されていません");
+			return;
+		}
+		isGameing = false;
+	}
+
+	public GamePlayer convertToGamePlayer(Player player) {
+		for (GamePlayer gamePlayer : gamePlayerList) {
+			if (gamePlayer.getPlayer() == player) {
+				return gamePlayer;
+			}
+		}
+
+		return null;
 	}
 }

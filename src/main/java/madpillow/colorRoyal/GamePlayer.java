@@ -1,9 +1,12 @@
 package madpillow.colorRoyal;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.scoreboard.Scoreboard;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,11 +35,22 @@ public class GamePlayer {
 		changeArmorColor(parentTeam);
 	}
 
+	public boolean damage(GamePlayer damager) {
+		Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
+		if (board.getEntryTeam(player.getName()) == board.getEntryTeam(damager.getPlayer().getName())) {
+			return false;
+		}
+
+		changeArmorColor(damager.getNowTeam());
+		damager.reduceAttackCount();
+
+		return true;
+	}
+
 	public void changeArmorColor(GameTeam team) {
 		ItemStack helmet = player.getInventory().getHelmet();
 		LeatherArmorMeta meta = (LeatherArmorMeta) helmet.getItemMeta();
-		meta.setColor(Color.fromRGB(team.getColor().getRed(), team.getColor().getGreen(),
-				team.getColor().getBlue()));
+		meta.setColor(Color.fromRGB(team.getColor()));
 		helmet.setItemMeta(meta);
 	}
 
