@@ -1,0 +1,3 @@
+main: ${project.groupId}.colorRoyal.${project.artifactId}
+name: ${project.artifactId}
+version: ${project.version}
