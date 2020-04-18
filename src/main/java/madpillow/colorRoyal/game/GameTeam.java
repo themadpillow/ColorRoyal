@@ -24,17 +24,13 @@ public class GameTeam {
 	}
 
 	public void addPoint() {
-		for (OfflinePlayer player : team.getPlayers()) {
-			if (!player.isOnline()) {
-				continue;
-			}
-
+		team.getPlayers().stream().filter(OfflinePlayer::isOnline).forEach(player -> {
 			Scoreboard scoreboard = player.getPlayer().getScoreboard();
 			scoreboard.resetScores(TextConfig.getSideBarText(SideBarText.Point, String.valueOf(point)));
 			point++;
 			scoreboard.getObjective(DisplaySlot.SIDEBAR)
 					.getScore(TextConfig.getSideBarText(SideBarText.Point, String.valueOf(point)))
 					.setScore(4);
-		}
+		});
 	}
 }

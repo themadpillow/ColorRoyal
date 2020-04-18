@@ -2,7 +2,7 @@ package madpillow.colorRoyal;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -14,7 +14,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Team;
 
 import lombok.Getter;
 import madpillow.colorRoyal.commands.SetCommand;
@@ -61,22 +60,17 @@ public class ColorRoyal extends JavaPlugin {
 	}
 
 	private void loadTeam() {
-		FileConfiguration configuration = getConfig();
-		ConfigurationSection section = configuration.getConfigurationSection("Team");
-		if (section == null) {
-			createTeamConfig();
-			reloadConfig();
-			configuration = getConfig();
-			section = configuration.getConfigurationSection("Team");
-		}
+		ConfigurationSection section = Optional.ofNullable(getConfig().getConfigurationSection("Team"))
+				.orElseGet(() -> {
+					createTeamConfig();
+					reloadConfig();
+					return getConfig().getConfigurationSection("Team");
+				});
 
-		Map<String, Object> teams = section.getValues(false);
-
-		for (Entry<String, Object> set : teams.entrySet()) {
-			String teamName = set.getKey();
-			Team team = ScoreBoardUtils.createTeam(teamName);
-			gameManager.getGameTeamListManager().addGameTeam(new GameTeam(team, (int) set.getValue()));
-		}
+		section.getValues(false).forEach((teamName, color) -> {
+			gameManager.getGameTeamListManager().addGameTeam(
+					new GameTeam(ScoreBoardUtils.createTeam(teamName), (int) color));
+		});
 	}
 
 	private void createTeamConfig() {
@@ -89,10 +83,10 @@ public class ColorRoyal extends JavaPlugin {
 	}
 
 	private void initTimeBossBar() {
-		FileConfiguration configuration = this.getConfig();
+		FileConfiguration configuration = getConfig();
 		if (!configuration.contains("Time")) {
 			configuration.set("Time", 300);
-			this.saveConfig();
+			saveConfig();
 		}
 
 		BossBar bar = Bukkit.createBossBar(NamespacedKey.minecraft("time"), "残り時間：試合開始前", BarColor.GREEN,

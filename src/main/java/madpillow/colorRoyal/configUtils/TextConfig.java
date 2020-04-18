@@ -37,23 +37,6 @@ public class TextConfig {
 		sideBarMap = checkConfigurationSectionData("SideBar", sideBarMap);
 	}
 
-	private static Map<String, String> checkConfigurationSectionData(String sectionPath,
-			Map<String, String> map) {
-		FileConfiguration configuration = config.getConfig();
-		final ConfigurationSection section = Optional.ofNullable(configuration.getConfigurationSection(sectionPath))
-				.orElse(configuration.createSection(sectionPath));
-		map.forEach((key, value) -> {
-			if (!section.contains(key)) {
-				section.set(key, value);
-			} else {
-				map.put(key, section.getString(key));
-			}
-		});
-
-		config.saveConfig();
-		return map;
-	}
-
 	private static void initSkill() {
 		skillMap = new HashMap<>();
 		for (SideBarText sideBarText : SideBarText.values()) {
@@ -69,6 +52,23 @@ public class TextConfig {
 			gameMessageMap.put(sideBarText.toString(), sideBarText.getDefaultString());
 		}
 		gameMessageMap = checkConfigurationSectionData("GameMessage", gameMessageMap);
+	}
+
+	private static Map<String, String> checkConfigurationSectionData(String sectionPath,
+			Map<String, String> map) {
+		FileConfiguration configuration = config.getConfig();
+		final ConfigurationSection section = Optional.ofNullable(configuration.getConfigurationSection(sectionPath))
+				.orElse(configuration.createSection(sectionPath));
+		map.forEach((key, value) -> {
+			if (!section.contains(key)) {
+				section.set(key, value);
+			} else {
+				map.put(key, section.getString(key));
+			}
+		});
+
+		config.saveConfig();
+		return map;
 	}
 
 	public static String getSideBarText(SideBarText sideBarText, String... values) {

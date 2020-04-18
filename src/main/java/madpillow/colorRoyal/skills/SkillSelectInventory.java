@@ -62,15 +62,18 @@ public class SkillSelectInventory {
 	}
 
 	public static void checkHave2Skill(GamePlayer gamePlayer) {
-		if (gamePlayer.getSkillList().size() == 0) {
+		switch (gamePlayer.getSkillList().size()) {
+		case 0:
 			gamePlayer.getSkillList().add(Skills.Speed.getSkill(gamePlayer));
 			gamePlayer.getSkillList().add(Skills.Invisiblity.getSkill(gamePlayer));
-		} else if (gamePlayer.getSkillList().size() == 1) {
+			break;
+		case 1:
 			if (gamePlayer.getSkillList().get(0).getEnumSkill() == Skills.Speed) {
 				gamePlayer.getSkillList().add(Skills.Invisiblity.getSkill(gamePlayer));
 			} else {
 				gamePlayer.getSkillList().add(Skills.Speed.getSkill(gamePlayer));
 			}
+			break;
 		}
 	}
 
