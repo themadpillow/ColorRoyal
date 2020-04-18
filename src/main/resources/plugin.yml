@@ -1,12 +1,17 @@
 main: ${project.groupId}.colorRoyal.${project.artifactId}
 name: ${project.artifactId}
 version: ${project.version}
+api-version: 1.13
 commands:
  start:
-   usage: /<command>
+   usage: /<command> [MAP名]
    permission: op
    permission-message: "§4このコマンドを実行するための権限がありません！"
- stop:
-   usage: /<command>
+ set:
+   usage: /<command> [MAP名] [テレポート範囲(半径)]
+   permission: op
+   permission-message: "§4このコマンドを実行するための権限がありません！"
+ skillitem:
+   usage: /<command> or /<command> <Player>
    permission: op
    permission-message: "§4このコマンドを実行するための権限がありません！"

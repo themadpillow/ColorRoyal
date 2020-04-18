@@ -5,7 +5,7 @@
 
 	<groupId>madpillow</groupId>
 	<artifactId>ColorRoyal</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.5.1</version>
 	<packaging>jar</packaging>
 
 	<name>ColorRoyal</name>

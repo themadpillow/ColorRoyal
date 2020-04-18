@@ -1,48 +1,66 @@
 package madpillow.colorRoyal;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import lombok.Getter;
+import madpillow.colorRoyal.commands.SetCommand;
+import madpillow.colorRoyal.commands.SkillItemCommand;
+import madpillow.colorRoyal.commands.StartCommand;
+import madpillow.colorRoyal.configUtils.TextConfig;
+import madpillow.colorRoyal.game.GameManager;
+import madpillow.colorRoyal.game.GameTeam;
+import madpillow.colorRoyal.scoreboard.ScoreBoardUtils;
+import madpillow.colorRoyal.skills.SkillSelectInventory;
 
 public class ColorRoyal extends JavaPlugin {
 	@Getter
 	private static ColorRoyal plugin;
 	@Getter
-	public boolean isGameing = false;
-
-	@Getter
-	private List<GamePlayer> gamePlayerList;
-	@Getter
-	private List<GameTeam> teamList;
+	private GameManager gameManager;
 
 	@Override
 	public void onEnable() {
 		this.plugin = this;
-		this.gamePlayerList = new ArrayList<>();
-		this.teamList = new ArrayList<>();
+		this.gameManager = new GameManager();
+		TextConfig.initTextConfig();
 
-		Commands commands = new Commands();
-		getCommand("start").setExecutor(commands);
-		getCommand("stop").setExecutor(commands);
+		Bukkit.getPluginManager().registerEvents(new Events(), this);
 
-		Bukkit.getPluginManager().registerEvents(new GameEvent(), this);
-		initTeam();
+		getCommand("start").setExecutor(new StartCommand());
+		getCommand("set").setExecutor(new SetCommand());
+		getCommand("skillitem").setExecutor(new SkillItemCommand());
+
+		loadTeam();
+		initTimeBossBar();
+
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			gameManager.getGameTeamListManager().joinGame(player);
+			if (!player.getInventory().contains(Material.NETHER_STAR)) {
+				player.getInventory().addItem(SkillSelectInventory.getItemStack());
+			}
+		}
 	}
 
-	private void initTeam() {
+	@Override
+	public void onDisable() {
+		Bukkit.getBossBar(NamespacedKey.minecraft("time")).removeAll();
+	}
+
+	private void loadTeam() {
 		FileConfiguration configuration = getConfig();
 		ConfigurationSection section = configuration.getConfigurationSection("Team");
 		if (section == null) {
@@ -56,17 +74,8 @@ public class ColorRoyal extends JavaPlugin {
 
 		for (Entry<String, Object> set : teams.entrySet()) {
 			String teamName = set.getKey();
-			Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
-			if (board.getTeam(teamName) != null) {
-				MemorySection teamSection = (MemorySection) set.getValue();
-				teamList.add(new GameTeam(board.getTeam(teamName), teamSection.getInt("Color")));
-
-				continue;
-			}
-
-			Team team = board.registerNewTeam(teamName);
-			MemorySection teamSection = (MemorySection) set.getValue();
-			teamList.add(new GameTeam(team, teamSection.getInt("Color")));
+			Team team = ScoreBoardUtils.createTeam(teamName);
+			gameManager.getGameTeamListManager().addGameTeam(new GameTeam(team, (int) set.getValue()));
 		}
 	}
 
@@ -79,41 +88,15 @@ public class ColorRoyal extends JavaPlugin {
 		saveConfig();
 	}
 
-	public void start() {
-		if (isGameing) {
-			Bukkit.broadcastMessage("すでに開始しています");
-			return;
+	private void initTimeBossBar() {
+		FileConfiguration configuration = this.getConfig();
+		if (!configuration.contains("Time")) {
+			configuration.set("Time", 300);
+			this.saveConfig();
 		}
 
-		int teamIndex = 0;
-		for (Player player : Bukkit.getOnlinePlayers()) {
-			gamePlayerList.add(new GamePlayer(player, teamList.get(teamIndex)));
-			teamList.get(teamIndex).getTeam().addEntry(player.getName());
-
-			teamIndex++;
-			if (teamIndex >= teamList.size()) {
-				teamIndex = 0;
-			}
-		}
-
-		isGameing = true;
-	}
-
-	public void stop() {
-		if (!isGameing) {
-			Bukkit.broadcastMessage("まだ開始されていません");
-			return;
-		}
-		isGameing = false;
-	}
-
-	public GamePlayer convertToGamePlayer(Player player) {
-		for (GamePlayer gamePlayer : gamePlayerList) {
-			if (gamePlayer.getPlayer() == player) {
-				return gamePlayer;
-			}
-		}
-
-		return null;
+		BossBar bar = Bukkit.createBossBar(NamespacedKey.minecraft("time"), "残り時間：試合開始前", BarColor.GREEN,
+				BarStyle.SEGMENTED_10);
+		bar.setProgress(1.0);
 	}
 }
