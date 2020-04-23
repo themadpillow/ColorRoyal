@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -26,14 +27,16 @@ public class SkillSelectInventory {
 
 	public void openInventory() {
 		inventory = Bukkit.createInventory(null, 9, TextConfig.getSkillText(SkillText.SelectInventoryTitle,
-				(String[]) gamePlayer.getSkillList().stream().map(skill -> skill.getName()).toArray()));
+				gamePlayer.getSkillList().size() == 0 ? null
+						: gamePlayer.getSkillList().stream().map(skill -> skill.getName()).toArray(String[]::new)));
 		for (Skills skills : Skills.values()) {
 			ItemStack itemStack = skills.getSkill(gamePlayer).getItemStack();
 			for (Skill skill : gamePlayer.getSkillList()) {
 				if (skill.getItemStack().getType() == itemStack.getType()) {
 					ItemMeta meta = itemStack.getItemMeta();
-					meta.addEnchant(Enchantment.DIG_SPEED, 1, true);
+					meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 					itemStack.setItemMeta(meta);
+					itemStack.addUnsafeEnchantment(Enchantment.LUCK, 1);
 				}
 			}
 

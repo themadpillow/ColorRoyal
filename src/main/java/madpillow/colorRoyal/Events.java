@@ -35,7 +35,7 @@ public class Events implements Listener {
 				GameTeamListManager gameteamListManager = ColorRoyal.getPlugin().getGameManager()
 						.getGameTeamListManager();
 				GamePlayer gamePlayer = gameteamListManager.getGamePlayerAtList(e.getPlayer())
-						.orElse(gameteamListManager.joinGame(e.getPlayer()));
+						.orElseGet(() -> gameteamListManager.joinGame(e.getPlayer()));
 				new SkillSelectInventory(gamePlayer).openInventory();
 			}
 		}

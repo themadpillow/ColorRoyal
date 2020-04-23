@@ -22,24 +22,17 @@ public class GameTeamListManager {
 		if (gameManager.isGameing()) {
 			return null;
 		}
-		while (true) {
-			GameTeam gameTeam = null;
-			int minSize = 0;
-			for (GameTeam team : gameTeamList) {
-				if (team.getTeam().getSize() == minSize) {
-					gameTeam = team;
-					break;
-				}
-			}
-			if (gameTeam != null) {
-				GamePlayer gamePlayer = new GamePlayer(player, gameTeam);
+
+		for (GameTeam team : gameTeamList) {
+			if (team.getTeam().getSize() == 0) {
+				GamePlayer gamePlayer = new GamePlayer(player, team);
 				gameManager.getGamePlayerList().add(gamePlayer);
 
-				return gamePlayer;
-			} else {
-				minSize++;
+				break;
 			}
 		}
+
+		return null;
 	}
 
 	public void addGameTeam(GameTeam gameTeam) {

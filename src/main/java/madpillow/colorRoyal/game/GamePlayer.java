@@ -74,7 +74,9 @@ public class GamePlayer {
 		nowTeam = newTeam;
 
 		scoreboard.getObjective(DisplaySlot.SIDEBAR)
-				.getScore(TextConfig.getSideBarText(SideBarText.NowColor, nowTeam.getTeam().getName())).setScore(5);
+				.getScore(TextConfig.getSideBarText(SideBarText.NowColor, newTeam.getTeam().getName())).setScore(5);
+
+		this.attackCount = this.attackCountOrigin;
 
 		if (newTeam.getColor() == parentTeam.getColor()) {
 			this.isNowParentTeam = true;
@@ -88,17 +90,7 @@ public class GamePlayer {
 	}
 
 	public void damage(GamePlayer damager) {
-		canDamage = false;
 		damager.setCanAttack(false);
-		sendDiamondArmor();
-
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				canDamage = true;
-				sendArmor(nowTeam);
-			}
-		}.runTaskLater(ColorRoyal.getPlugin(), 5 * 20L);
 		new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -106,11 +98,13 @@ public class GamePlayer {
 			}
 		}.runTaskLater(ColorRoyal.getPlugin(), 3 * 20L);
 
-		changeTeam(damager.getNowTeam());
+		this.changeTeam(damager.getNowTeam());
+		this.changeArmorColor(nowTeam);
+		this.invincible();
+
 		damager.getNowTeam().addPoint();
 		damager.getPlayer().playSound(damager.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
 		PlayerUtils.sendMessage(player, damager.getNowTeam().getTeam().getName() + "に染められました！");
-		this.attackCount = this.attackCountOrigin;
 		player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 2);
 
 		if (damager.getNowTeam().getColor() != damager.getParentTeam().getColor()) {
@@ -121,7 +115,9 @@ public class GamePlayer {
 
 		Bukkit.getScheduler().runTaskLater(ColorRoyal.getPlugin(), () -> {
 			GameManager gameManager = ColorRoyal.getPlugin().getGameManager();
-			if (gameManager.getGamePlayerList().stream().allMatch(gamePlayer -> gamePlayer.isNowParentTeam())) {
+			if (gameManager.getGamePlayerList().stream()
+					.filter(gamePlayer -> gamePlayer.player.isOnline())
+					.allMatch(gamePlayer -> gamePlayer.isNowParentTeam())) {
 				gameManager.stop();
 			}
 		}, 0L);
@@ -147,7 +143,20 @@ public class GamePlayer {
 		changeArmorColor(gameTeam);
 	}
 
-	public void sendDiamondArmor() {
+	public void invincible() {
+		canDamage = false;
+		sendDiamondArmor();
+
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				canDamage = true;
+				sendArmor(nowTeam);
+			}
+		}.runTaskLater(ColorRoyal.getPlugin(), 5 * 20L);
+	}
+
+	private void sendDiamondArmor() {
 		player.getInventory().setChestplate(new ItemStack(Material.DIAMOND_CHESTPLATE));
 		player.getInventory().setLeggings(new ItemStack(Material.DIAMOND_LEGGINGS));
 		player.getInventory().setBoots(new ItemStack(Material.DIAMOND_BOOTS));

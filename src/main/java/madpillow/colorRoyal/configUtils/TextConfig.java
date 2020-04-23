@@ -2,7 +2,6 @@ package madpillow.colorRoyal.configUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -18,11 +17,7 @@ public class TextConfig {
 
 	public static void initTextConfig() {
 		config = new CustomConfig(ColorRoyal.getPlugin(), "TextConfig.yml");
-		reloadConfig();
-	}
 
-	public static void reloadConfig() {
-		config.reloadConfig();
 		initSideBar();
 		initSkill();
 		initGameMessage();
@@ -39,8 +34,8 @@ public class TextConfig {
 
 	private static void initSkill() {
 		skillMap = new HashMap<>();
-		for (SideBarText sideBarText : SideBarText.values()) {
-			skillMap.put(sideBarText.toString(), sideBarText.getDefaultString());
+		for (SkillText skillText : SkillText.values()) {
+			skillMap.put(skillText.toString(), skillText.getDefaultString());
 		}
 
 		skillMap = checkConfigurationSectionData("Skill", skillMap);
@@ -48,8 +43,8 @@ public class TextConfig {
 
 	private static void initGameMessage() {
 		gameMessageMap = new HashMap<>();
-		for (SideBarText sideBarText : SideBarText.values()) {
-			gameMessageMap.put(sideBarText.toString(), sideBarText.getDefaultString());
+		for (GameMessageText gameMessageText : GameMessageText.values()) {
+			gameMessageMap.put(gameMessageText.toString(), gameMessageText.getDefaultString());
 		}
 		gameMessageMap = checkConfigurationSectionData("GameMessage", gameMessageMap);
 	}
@@ -57,16 +52,18 @@ public class TextConfig {
 	private static Map<String, String> checkConfigurationSectionData(String sectionPath,
 			Map<String, String> map) {
 		FileConfiguration configuration = config.getConfig();
-		final ConfigurationSection section = Optional.ofNullable(configuration.getConfigurationSection(sectionPath))
-				.orElse(configuration.createSection(sectionPath));
-		map.forEach((key, value) -> {
+		ConfigurationSection section = configuration.getConfigurationSection(sectionPath);
+		if (section == null) {
+			section = configuration.createSection(sectionPath);
+		}
+
+		for (String key : map.keySet()) {
 			if (!section.contains(key)) {
-				section.set(key, value);
+				section.set(key, map.get(key));
 			} else {
 				map.put(key, section.getString(key));
 			}
-		});
-
+		}
 		config.saveConfig();
 		return map;
 	}
@@ -80,7 +77,7 @@ public class TextConfig {
 		case Skill:
 			String status = values[1].equals("0") ? getActive() : getCoolTime(values[1]);
 			return sideBarMap.get(sideBarText.toString())
-					.replace("<SKILL_NAME>", values[0]).replace("<STATUS>", values[1]);
+					.replace("<SKILL_NAME>", values[0]).replace("<STATUS>", status);
 		default:
 			return sideBarMap.get(sideBarText.toString());
 		}

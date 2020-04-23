@@ -55,8 +55,12 @@ public class GameManager {
 			player.updateInventory();
 
 			GamePlayer gamePlayer = gameTeamListManager.getGamePlayerAtList(player)
-					.orElse(gameTeamListManager.joinGame(player));
+					.orElseGet(() -> gameTeamListManager.joinGame(player));
 
+			if (gamePlayer == null) {
+				PlayerUtils.sendMessage(player, "参加可能なチームが存在しません");
+				continue;
+			}
 			gamePlayer.sendArmor(gamePlayer.getNowTeam());
 
 			SkillSelectInventory.sendSkillItem(gamePlayer);
@@ -222,9 +226,13 @@ public class GameManager {
 				bar.setProgress((double) x / time);
 				bar.setTitle("残り時間：" + x + "秒");
 
-				if (x == 3 * 60) {
-					gamePlayerList.stream().filter(gamePlayer -> gamePlayer.getPlayer().isOnline())
-							.forEach(gamePlayer -> gamePlayer.changeTeam(gamePlayer.getParentTeam()));
+				if (x == 180) {
+					gamePlayerList.stream()
+							.filter(gamePlayer -> gamePlayer.getPlayer().isOnline())
+							.forEach(gamePlayer -> {
+								gamePlayer.changeTeam(gamePlayer.getParentTeam());
+								gamePlayer.sendArmor(gamePlayer.getNowTeam());
+							});
 				}
 			}
 		}.runTaskTimer(ColorRoyal.getPlugin(), 20L, 20L);
