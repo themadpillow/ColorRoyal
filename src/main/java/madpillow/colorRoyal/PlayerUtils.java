@@ -8,8 +8,9 @@ import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import madpillow.colorRoyal.configUtils.GameMessageText;
+import madpillow.colorRoyal.configUtils.TextConfig;
 import madpillow.colorRoyal.game.GameMap;
-import net.md_5.bungee.api.ChatColor;
 
 public class PlayerUtils {
 	public static boolean canSee(Player player, Player target) {
@@ -106,13 +107,13 @@ public class PlayerUtils {
 	}
 
 	public static void broadcastMessage(String message) {
-		String prefix = ChatColor.GOLD + "§l[ColorRoyal] ";
-		Bukkit.broadcastMessage(prefix + ChatColor.RESET + message);
+		String prefix = TextConfig.getGameMessageText(GameMessageText.ChatPrefix);
+		Bukkit.broadcastMessage(prefix + message);
 	}
 
 	public static void sendMessage(Player player, String message) {
-		String prefix = ChatColor.GOLD + "§l[ColorRoyal] ";
-		player.sendMessage(prefix + ChatColor.RESET + message);
+		String prefix = TextConfig.getGameMessageText(GameMessageText.ChatPrefix);
+		player.sendMessage(prefix + message);
 	}
 
 	public static void createHelix(Player player, Location loc, double offset) {
@@ -129,7 +130,7 @@ public class PlayerUtils {
 
 	public static void teleportPlayer(Player player, GameMap gameMap) {
 		while (true) {
-			Location tempLoc = gameMap.getLocation();
+			Location tempLoc = gameMap.getLocation().clone();
 			int x = (int) (Math.random() * gameMap.getTeleportDistance());
 			if ((int) (Math.random() * 2) == 0) {
 				x = -x;

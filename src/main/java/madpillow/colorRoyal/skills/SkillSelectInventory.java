@@ -27,7 +27,8 @@ public class SkillSelectInventory {
 
 	public void openInventory() {
 		inventory = Bukkit.createInventory(null, 9, TextConfig.getSkillText(SkillText.SelectInventoryTitle,
-				gamePlayer.getSkillList().size() == 0 ? null
+				(gamePlayer.getSkillList() == null || gamePlayer.getSkillList().size() == 0)
+						? null
 						: gamePlayer.getSkillList().stream().map(skill -> skill.getName()).toArray(String[]::new)));
 		for (Skills skills : Skills.values()) {
 			ItemStack itemStack = skills.getSkill(gamePlayer).getItemStack();

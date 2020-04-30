@@ -18,6 +18,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import lombok.Getter;
 import madpillow.colorRoyal.ColorRoyal;
+import madpillow.colorRoyal.ColorType;
 import madpillow.colorRoyal.PlayerUtils;
 import madpillow.colorRoyal.configUtils.GameMessageText;
 import madpillow.colorRoyal.configUtils.TextConfig;
@@ -144,13 +145,15 @@ public class GameManager {
 						"========== " + ChatColor.GREEN + (rankingPos + 1) + "位" + ChatColor.RESET + " ==========");
 				Bukkit.broadcastMessage("");
 
+				GamePlayer winnerPlayer = null;
 				for (GameTeam gameTeam : ranking[rankingPos]) {
 					String teamMemberString = "[";
 					for (GamePlayer gamePlayer : gamePlayerList) {
 						if (gameTeam.getColor() == gamePlayer.getParentTeam().getColor()) {
-							teamMemberString += " " + gamePlayer.getPlayer().getName();
-							gamePlayer.getPlayer().addPotionEffect(
-									new PotionEffect(PotionEffectType.GLOWING, 20 * 60, 1));
+							winnerPlayer = gamePlayer;
+							teamMemberString += " " + winnerPlayer.getPlayer().getName();
+							winnerPlayer.getPlayer()
+									.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 60, 1));
 						}
 					}
 					teamMemberString += " ]";
@@ -160,6 +163,25 @@ public class GameManager {
 				Bukkit.broadcastMessage("");
 				Bukkit.broadcastMessage("==========" + ChatColor.GREEN + ranking[rankingPos].get(0).getPoint()
 						+ "P獲得" + ChatColor.RESET + "==========");
+
+				if (rankingPos == 0) {
+					GamePlayer winner = winnerPlayer;
+					new BukkitRunnable() {
+						ColorType[] colorTypes = madpillow.colorRoyal.ColorType.values();
+						int pos = 0;
+
+						@Override
+						public void run() {
+							if (pos < colorTypes.length) {
+								winner.getParentTeam().getTeam().setColor(colorTypes[pos].getChatColor());
+								pos++;
+							} else {
+								cancel();
+								return;
+							}
+						}
+					}.runTaskTimer(ColorRoyal.getPlugin(), 0L, 40L);
+				}
 			}
 		}.runTaskTimer(ColorRoyal.getPlugin(), 60L, 120L);
 	}
@@ -226,33 +248,46 @@ public class GameManager {
 				bar.setProgress((double) x / time);
 				bar.setTitle("残り時間：" + x + "秒");
 
-				if (x == 180) {
-					gamePlayerList.stream()
-							.filter(gamePlayer -> gamePlayer.getPlayer().isOnline())
-							.forEach(gamePlayer -> {
-								gamePlayer.changeTeam(gamePlayer.getParentTeam());
-								gamePlayer.sendArmor(gamePlayer.getNowTeam());
-							});
+				if (x == 180 + 10) {
+					allResetTask(10);
 				}
 			}
 		}.runTaskTimer(ColorRoyal.getPlugin(), 20L, 20L);
+	}
 
-		/* 20秒おきにParentTeamのPlayerに発光付与
+	private void allResetTask(int interval) {
+		gamePlayerList.stream().filter(player -> player.getPlayer().isOnline())
+				.forEach(player -> player.getPlayer().sendTitle(
+						TextConfig.getGameMessageText(GameMessageText.AllResetAnnounceTitle),
+						TextConfig.getGameMessageText(GameMessageText.AllResetAnnounceSubTitle,
+								String.valueOf(interval))));
+		PlayerUtils.broadcastMessage(TextConfig.getGameMessageText(GameMessageText.AllResetAnnounceChat,
+				String.valueOf(interval)));
 		new BukkitRunnable() {
+			int tempInterval = interval - 1;
+
 			@Override
 			public void run() {
-				if (isGameing == false) {
+				if (tempInterval == 0) {
+					gamePlayerList.stream().filter(player -> player.getPlayer().isOnline())
+							.forEach(player -> player.getPlayer()
+									.sendTitle(TextConfig.getGameMessageText(GameMessageText.AllResetTitle), ""));
+					PlayerUtils.broadcastMessage(
+							TextConfig.getGameMessageText(GameMessageText.AllResetChat, String.valueOf(tempInterval)));
 					cancel();
 					return;
 				}
-				for (GamePlayer gamePlayer : gamePlayerList) {
-					if (gamePlayer.getParentTeam().getColor() == gamePlayer.getNowTeam().getColor()) {
-						gamePlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 3 * 20, 1));
-					}
-				}
+
+				gamePlayerList.stream().filter(player -> player.getPlayer().isOnline())
+						.forEach(player -> player.getPlayer().sendTitle(
+								TextConfig.getGameMessageText(GameMessageText.AllResetIntervalTitle),
+								TextConfig.getGameMessageText(GameMessageText.AllResetIntervalSubTitle,
+										String.valueOf(tempInterval))));
+				PlayerUtils.broadcastMessage(TextConfig.getGameMessageText(GameMessageText.AllResetIntervalChat,
+						String.valueOf(tempInterval)));
+				tempInterval--;
 			}
-		}.runTaskTimer(ColorRoyal.getPlugin(), 20L, 20 * 20L);
-		*/
+		}.runTaskTimer(ColorRoyal.getPlugin(), 20L, 20L);
 	}
 
 	private void canSeeTask() {

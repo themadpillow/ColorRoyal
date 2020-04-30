@@ -44,7 +44,7 @@ public class GamePlayer {
 	@Getter
 	private int attackCount;
 	@Getter
-	private List<Skill> skillList;
+	private List<Skill> skillList = new ArrayList<>();
 	@Getter
 	private boolean isNowParentTeam = true;
 
@@ -52,7 +52,6 @@ public class GamePlayer {
 		this.player = player;
 		this.parentTeam = parentTeam;
 		this.nowTeam = parentTeam;
-		this.skillList = new ArrayList<>();
 
 		FileConfiguration configuration = ColorRoyal.getPlugin().getConfig();
 		if (!configuration.contains("AttackCount")) {

@@ -1,7 +1,7 @@
 package madpillow.colorRoyal.configUtils;
 
 public enum GameMessageText {
-	UntilStartChat, UntilStartTitle, UntilStartSubTitle, StartTitle, StartSubTitle, ReturnParentColor, AttackCT, DamageCTDamager, DamageCTTarget, PerformSkill, SkillCT, StopTitle, StopSubTitle;
+	UntilStartChat, UntilStartTitle, UntilStartSubTitle, StartTitle, StartSubTitle, ReturnParentColor, AttackCT, DamageCTDamager, DamageCTTarget, PerformSkill, SkillCT, StopTitle, StopSubTitle, ChatPrefix, AllResetAnnounceTitle, AllResetAnnounceSubTitle, AllResetAnnounceChat, AllResetIntervalTitle, AllResetIntervalSubTitle, AllResetIntervalChat, AllResetTitle, AllResetChat;
 
 	public String getDefaultString() {
 		switch (this) {
@@ -31,6 +31,24 @@ public enum GameMessageText {
 			return "§c～ゲーム終了～";
 		case StopSubTitle:
 			return "§b[ §6結果発表 チャットを確認 §b]";
+		case ChatPrefix:
+			return "§l[ColorRoyal]§r ";
+		case AllResetAnnounceTitle:
+			return "まもなく色がリセットされリスポーンします";
+		case AllResetAnnounceSubTitle:
+			return "リセットまで...<VALUE> 秒";
+		case AllResetAnnounceChat:
+			return "リセットまで...<VALUE> 秒";
+		case AllResetIntervalTitle:
+			return "まもなく色がリセットされリスポーンします";
+		case AllResetIntervalSubTitle:
+			return "リセットまで...<VALUE> 秒";
+		case AllResetIntervalChat:
+			return "リセットまで...<VALUE> 秒";
+		case AllResetTitle:
+			return "リセットされました！";
+		case AllResetChat:
+			return "リセットされました！";
 		default:
 			throw new RuntimeException("不明なText");
 		}

@@ -36,7 +36,9 @@ public class Events implements Listener {
 						.getGameTeamListManager();
 				GamePlayer gamePlayer = gameteamListManager.getGamePlayerAtList(e.getPlayer())
 						.orElseGet(() -> gameteamListManager.joinGame(e.getPlayer()));
-				new SkillSelectInventory(gamePlayer).openInventory();
+
+				SkillSelectInventory skillSelectInventory = new SkillSelectInventory(gamePlayer);
+				skillSelectInventory.openInventory();
 			}
 		}
 
