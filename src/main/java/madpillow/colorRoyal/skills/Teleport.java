@@ -1,7 +1,9 @@
 package madpillow.colorRoyal.skills;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import madpillow.colorRoyal.ColorRoyal;
@@ -16,13 +18,14 @@ public class Teleport extends Skill {
 	}
 
 	@Override
-	protected void actionSkill() {
+	protected boolean actionSkill() {
 		if (location == null) {
 			location = gamePlayer.getPlayer().getLocation();
 			PlayerUtils.sendMessage(gamePlayer.getPlayer(), "テレポート先を設定しました");
 
 			new BukkitRunnable() {
 				double offset = 0;
+
 				@Override
 				public void run() {
 					if (location == null) {
@@ -37,17 +40,15 @@ public class Teleport extends Skill {
 				}
 			}.runTaskTimer(ColorRoyal.getPlugin(), 20L, 1L);
 		} else {
+			Location beforeLoc = gamePlayer.getPlayer().getLocation().clone();
 			gamePlayer.getPlayer().teleport(location);
 			gamePlayer.getPlayer().playSound(location, Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1);
+			for (Player player : Bukkit.getOnlinePlayers()) {
+				player.playSound(beforeLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1);
+			}
 			location = null;
 		}
-	}
 
-	@Override
-	protected void setLoresInfo() {
-		loresInfo.add("右クリックで使用");
-		loresInfo.add("一度目の使用でテレポート先を設定");
-		loresInfo.add("二度目の使用で設定先にテレポート");
-		loresInfo.add("CT：" + coolTime + "秒");
+		return true;
 	}
 }

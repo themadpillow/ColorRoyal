@@ -10,20 +10,22 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 import madpillow.colorRoyal.configUtils.SkillText;
 import madpillow.colorRoyal.configUtils.TextConfig;
 import madpillow.colorRoyal.game.GameManager;
 import madpillow.colorRoyal.game.GamePlayer;
 import madpillow.colorRoyal.game.GameTeamListManager;
+import madpillow.colorRoyal.scoreboard.ScoreBoardUtils;
 import madpillow.colorRoyal.skills.Skill;
 import madpillow.colorRoyal.skills.SkillSelectInventory;
-import madpillow.colorRoyal.skills.Skills;
+import madpillow.colorRoyal.skills.SkillType;
+import net.md_5.bungee.api.ChatColor;
 
 public class Events implements Listener {
 	@EventHandler
@@ -41,7 +43,13 @@ public class Events implements Listener {
 				skillSelectInventory.openInventory();
 			}
 		}
+	}
 
+	@EventHandler
+	public void onDamage(EntityDamageEvent e) {
+		if (ColorRoyal.getPlugin().getGameManager().isGameing()) {
+			e.setDamage(0.1);
+		}
 	}
 
 	@EventHandler
@@ -72,8 +80,9 @@ public class Events implements Listener {
 
 			if (e.getCurrentItem().getItemMeta().hasEnchants()) {
 				for (Skill skill : gamePlayer.get().getSkillList()) {
-					if (skill.getItemStack().getType() == e.getCurrentItem().getType()) {
+					if (skill.getEnumSkill().getMaterial() == e.getCurrentItem().getType()) {
 						gamePlayer.get().getSkillList().remove(skill);
+						gamePlayer.get().getPlayer().setPlayerListName(gamePlayer.get().getPlayer().getName());
 						break;
 					}
 				}
@@ -82,9 +91,18 @@ public class Events implements Listener {
 					PlayerUtils.sendMessage(gamePlayer.get().getPlayer(), "3つ以上のSKILLは選択できません。どちらかを解除して選択してください。");
 					return;
 				} else {
-					for (Skills skills : Skills.values()) {
+					for (SkillType skills : SkillType.values()) {
 						if (skills.getMaterial() == e.getCurrentItem().getType()) {
 							gamePlayer.get().getSkillList().add(skills.getSkill(gamePlayer.get()));
+
+							if (gamePlayer.get().getSkillList().size() == 2) {
+								gamePlayer.get().getPlayer()
+										.setPlayerListName(ChatColor.GREEN + "✔" + ChatColor.RESET
+												+ gamePlayer.get().getPlayer().getName());
+							} else {
+								gamePlayer.get().getPlayer().setPlayerListName(gamePlayer.get().getPlayer().getName());
+							}
+
 							break;
 						}
 					}
@@ -107,23 +125,24 @@ public class Events implements Listener {
 			if (!e.getPlayer().getInventory().contains(Material.NETHER_STAR)) {
 				e.getPlayer().getInventory().addItem(SkillSelectInventory.getItemStack());
 			}
-			if (gameteamListManager.getGamePlayerAtList(e.getPlayer()) == null) {
+			Optional<GamePlayer> gamePlayer = null;
+			if (!(gamePlayer = gameteamListManager.getHardGamePlayerAtList(e.getPlayer())).isPresent()) {
 				gameteamListManager.joinGame(e.getPlayer());
+			} else {
+				gamePlayer.get().setPlayer(e.getPlayer());
 			}
 		} else {
-			if (gameteamListManager.getGamePlayerAtList(e.getPlayer()) == null) {
+			Optional<GamePlayer> gamePlayer = null;
+			if ((gamePlayer = gameteamListManager.getHardGamePlayerAtList(e.getPlayer())).isPresent()) {
+				gamePlayer.get().setPlayer(e.getPlayer());
+				e.getPlayer().setScoreboard(gamePlayer.get().getParentTeam().getTeam().getScoreboard());
+				gamePlayer.get().getParentTeam().getTeam().addEntry(e.getPlayer().getName());
+				ScoreBoardUtils.createSideBar(gamePlayer.get());
+			} else {
 				e.getPlayer().setGameMode(GameMode.SPECTATOR);
 				PlayerUtils.sendMessage(e.getPlayer(), "試合中のため観戦モードになりました");
 			}
 		}
-	}
-
-	@EventHandler
-	public void onPlayerQuitEvent(PlayerQuitEvent e) {
-		GameManager gameManager = ColorRoyal.getPlugin().getGameManager();
-		GameTeamListManager gameteamListManager = ColorRoyal.getPlugin().getGameManager().getGameTeamListManager();
-		gameteamListManager.getGamePlayerAtList(e.getPlayer())
-				.ifPresent(gamePlayer -> gameManager.getGamePlayerList().remove(gamePlayer));
 	}
 
 	@EventHandler

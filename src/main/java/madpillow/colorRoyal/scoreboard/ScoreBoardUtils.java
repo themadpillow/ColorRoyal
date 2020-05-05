@@ -24,10 +24,15 @@ public class ScoreBoardUtils {
 
 	public static void createSideBar(GamePlayer gamePlayer) {
 		Scoreboard scoreboard = gamePlayer.getPlayer().getScoreboard();
-		Objective objective = scoreboard.registerNewObjective("ColorRoyal", "ColorRoyal",
+		Objective objective = scoreboard.getObjective(DisplaySlot.SIDEBAR);
+		if (objective != null) {
+			objective.unregister();
+		}
+		objective = scoreboard.registerNewObjective("ColorRoyal", "ColorRoyal",
 				TextConfig.getSideBarText(SideBarText.Title),
 				RenderType.INTEGER);
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+
 		objective.getScore("").setScore(7);
 		objective
 				.getScore(TextConfig.getSideBarText(SideBarText.ParentColor,
@@ -35,7 +40,10 @@ public class ScoreBoardUtils {
 				.setScore(6);
 		objective.getScore(TextConfig.getSideBarText(SideBarText.NowColor, gamePlayer.getNowTeam().getTeam().getName()))
 				.setScore(5);
-		objective.getScore(TextConfig.getSideBarText(SideBarText.Point, "0")).setScore(4);
+		objective
+				.getScore(TextConfig.getSideBarText(SideBarText.Point,
+						String.valueOf(gamePlayer.getParentTeam().getPoint())))
+				.setScore(4);
 		objective.getScore("").setScore(3);
 		objective.getScore(TextConfig.getSideBarText(SideBarText.SkillTitle)).setScore(2);
 		objective.getScore(
@@ -44,5 +52,16 @@ public class ScoreBoardUtils {
 		objective.getScore(
 				TextConfig.getSideBarText(SideBarText.Skill, gamePlayer.getSkillList().get(1).getName(), "0"))
 				.setScore(0);
+	}
+
+	public static void createWinnerColorTeam(GamePlayer gamePlayer) {
+		Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+		Team team = scoreboard.getTeam("WinnerTeam");
+		if (team != null) {
+			team.unregister();
+		}
+		team = scoreboard.registerNewTeam("WinnerTeam");
+
+		team.addEntry(gamePlayer.getPlayer().getName());
 	}
 }

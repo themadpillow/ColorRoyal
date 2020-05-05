@@ -1,7 +1,7 @@
 package madpillow.colorRoyal.configUtils;
 
 public enum SkillText {
-	SelectItemName, SelectInventoryTitle, Blindness, Glowing, Invisiblity, Speed, Teleport, CoolTime;
+	SelectItemName, SelectInventoryTitle, Blindness, Glowing, Invisiblity, Speed, Teleport, HighJump, CoolTime, ChargeJump, Decoy;
 
 	public String getDefaultString() {
 		switch (this) {
@@ -21,6 +21,12 @@ public enum SkillText {
 			return "§eシュッスタッ";
 		case CoolTime:
 			return "§cCT<VALUE>秒";
+		case HighJump:
+			return "§eハイジャンプ";
+		case ChargeJump:
+			return "§eチャージジャンプ";
+		case Decoy:
+			return "§eデコイ";
 		default:
 			throw new RuntimeException("不明なText");
 		}

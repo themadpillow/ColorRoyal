@@ -15,18 +15,13 @@ public class Invisiblity extends Skill {
 	}
 
 	@Override
-	protected void actionSkill() {
+	protected boolean actionSkill() {
 		gamePlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 20 * 5, 1));
 		gamePlayer.getPlayer().getInventory().setArmorContents(new ItemStack[4]);
 		Bukkit.getScheduler().runTaskLater(ColorRoyal.getPlugin(), () -> {
 			gamePlayer.sendArmor(gamePlayer.getNowTeam());
 		}, 5 * 20L);
-	}
 
-	@Override
-	protected void setLoresInfo() {
-		loresInfo.add("右クリックで使用");
-		loresInfo.add("5秒間透明化");
-		loresInfo.add("CT：" + coolTime + "秒");
+		return true;
 	}
 }

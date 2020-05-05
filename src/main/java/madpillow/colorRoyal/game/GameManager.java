@@ -19,6 +19,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import lombok.Getter;
 import madpillow.colorRoyal.ColorRoyal;
 import madpillow.colorRoyal.ColorType;
+import madpillow.colorRoyal.NPCUtils;
 import madpillow.colorRoyal.PlayerUtils;
 import madpillow.colorRoyal.configUtils.GameMessageText;
 import madpillow.colorRoyal.configUtils.TextConfig;
@@ -50,6 +51,8 @@ public class GameManager {
 		this.gameMap = gameMap;
 		gameMap.getWorld().setDifficulty(Difficulty.PEACEFUL);
 
+		NPCUtils.init();
+
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			player.setGameMode(GameMode.ADVENTURE);
 			player.getInventory().clear();
@@ -71,6 +74,8 @@ public class GameManager {
 			}
 			PlayerUtils.sendMessage(gamePlayer.getPlayer(), "=======================");
 
+			gamePlayer.getPlayer().setPlayerListName(gamePlayer.getPlayer().getName());
+
 			ScoreBoardUtils.createSideBar(gamePlayer);
 		}
 
@@ -91,6 +96,10 @@ public class GameManager {
 			player.sendTitle(ChatColor.RED + "ゲーム終了！", "");
 			player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1, 1);
 			player.getInventory().clear();
+
+			player.teleport(gameMap.getLocation());
+			player.setGameMode(GameMode.ADVENTURE);
+
 			Optional<GamePlayer> gamePlayer = gameTeamListManager.getGamePlayerAtList(player);
 			if (gamePlayer.isPresent()) {
 				gamePlayer.get().sendArmor(gamePlayer.get().getParentTeam());
@@ -131,6 +140,7 @@ public class GameManager {
 			@Override
 			public void run() {
 				if (--rankingPos == -1) {
+					ColorRoyal.getPlugin().reload();
 					cancel();
 					return;
 				}
@@ -228,6 +238,9 @@ public class GameManager {
 		isGameing = true;
 		Bukkit.getPluginManager().registerEvents(new GameEvent(), ColorRoyal.getPlugin());
 		canSeeTask();
+		for (GamePlayer gamePlayer : gamePlayerList) {
+			gamePlayer.remainAttackCount();
+		}
 
 		int time = ColorRoyal.getPlugin().getConfig().getInt("Time", 300);
 		new BukkitRunnable() {
@@ -270,10 +283,15 @@ public class GameManager {
 			public void run() {
 				if (tempInterval == 0) {
 					gamePlayerList.stream().filter(player -> player.getPlayer().isOnline())
-							.forEach(player -> player.getPlayer()
-									.sendTitle(TextConfig.getGameMessageText(GameMessageText.AllResetTitle), ""));
+							.forEach(player -> {
+								player.getPlayer()
+										.sendTitle(TextConfig.getGameMessageText(GameMessageText.AllResetTitle), "");
+								player.changeTeam(player.getParentTeam());
+								player.sendArmor(player.getNowTeam());
+							});
 					PlayerUtils.broadcastMessage(
-							TextConfig.getGameMessageText(GameMessageText.AllResetChat, String.valueOf(tempInterval)));
+							TextConfig.getGameMessageText(GameMessageText.AllResetChat));
+
 					cancel();
 					return;
 				}

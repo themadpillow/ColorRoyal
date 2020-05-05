@@ -2,6 +2,7 @@ main: ${project.groupId}.colorRoyal.${project.artifactId}
 name: ${project.artifactId}
 version: ${project.version}
 api-version: 1.13
+depend: [Citizens]
 commands:
  start:
    usage: /<command> [MAP名]

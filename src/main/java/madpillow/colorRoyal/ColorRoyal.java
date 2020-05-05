@@ -24,6 +24,7 @@ import madpillow.colorRoyal.game.GameManager;
 import madpillow.colorRoyal.game.GameTeam;
 import madpillow.colorRoyal.scoreboard.ScoreBoardUtils;
 import madpillow.colorRoyal.skills.SkillSelectInventory;
+import net.citizensnpcs.api.CitizensAPI;
 
 public class ColorRoyal extends JavaPlugin {
 	@Getter
@@ -52,11 +53,38 @@ public class ColorRoyal extends JavaPlugin {
 				player.getInventory().addItem(SkillSelectInventory.getItemStack());
 			}
 		}
+
+		CitizensAPI.getNPCRegistry().deregisterAll();
+
+		debug();
+	}
+
+	public void debug() {
+
+	}
+
+	public void reload() {
+		this.plugin = this;
+		this.gameManager = new GameManager();
+
+		loadTeam();
+		initTimeBossBar();
+
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			gameManager.getGameTeamListManager().joinGame(player);
+			if (!player.getInventory().contains(Material.NETHER_STAR)) {
+				player.getInventory().addItem(SkillSelectInventory.getItemStack());
+			}
+		}
+
+		Bukkit.getBossBar(NamespacedKey.minecraft("time")).removeAll();
+		NPCUtils.destroyAll();
 	}
 
 	@Override
 	public void onDisable() {
 		Bukkit.getBossBar(NamespacedKey.minecraft("time")).removeAll();
+		NPCUtils.destroyAll();
 	}
 
 	private void loadTeam() {

@@ -30,10 +30,10 @@ public class SkillSelectInventory {
 				(gamePlayer.getSkillList() == null || gamePlayer.getSkillList().size() == 0)
 						? null
 						: gamePlayer.getSkillList().stream().map(skill -> skill.getName()).toArray(String[]::new)));
-		for (Skills skills : Skills.values()) {
-			ItemStack itemStack = skills.getSkill(gamePlayer).getItemStack();
+		for (SkillType skills : SkillType.values()) {
+			ItemStack itemStack = skills.getItemStack();
 			for (Skill skill : gamePlayer.getSkillList()) {
-				if (skill.getItemStack().getType() == itemStack.getType()) {
+				if (skill.getEnumSkill().getMaterial() == itemStack.getType()) {
 					ItemMeta meta = itemStack.getItemMeta();
 					meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 					itemStack.setItemMeta(meta);
@@ -68,14 +68,14 @@ public class SkillSelectInventory {
 	public static void checkHave2Skill(GamePlayer gamePlayer) {
 		switch (gamePlayer.getSkillList().size()) {
 		case 0:
-			gamePlayer.getSkillList().add(Skills.Speed.getSkill(gamePlayer));
-			gamePlayer.getSkillList().add(Skills.Invisiblity.getSkill(gamePlayer));
+			gamePlayer.getSkillList().add(SkillType.Speed.getSkill(gamePlayer));
+			gamePlayer.getSkillList().add(SkillType.Invisiblity.getSkill(gamePlayer));
 			break;
 		case 1:
-			if (gamePlayer.getSkillList().get(0).getEnumSkill() == Skills.Speed) {
-				gamePlayer.getSkillList().add(Skills.Invisiblity.getSkill(gamePlayer));
+			if (gamePlayer.getSkillList().get(0).getEnumSkill() == SkillType.Speed) {
+				gamePlayer.getSkillList().add(SkillType.Invisiblity.getSkill(gamePlayer));
 			} else {
-				gamePlayer.getSkillList().add(Skills.Speed.getSkill(gamePlayer));
+				gamePlayer.getSkillList().add(SkillType.Speed.getSkill(gamePlayer));
 			}
 			break;
 		}
@@ -84,7 +84,7 @@ public class SkillSelectInventory {
 	public static void sendSkillItem(GamePlayer gamePlayer) {
 		checkHave2Skill(gamePlayer);
 		for (Skill skill : gamePlayer.getSkillList()) {
-			gamePlayer.getPlayer().getInventory().addItem(skill.getItemStack());
+			gamePlayer.getPlayer().getInventory().addItem(skill.getEnumSkill().getItemStack());
 		}
 	}
 }

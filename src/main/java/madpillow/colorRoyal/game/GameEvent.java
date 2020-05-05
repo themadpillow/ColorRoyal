@@ -2,7 +2,9 @@ package madpillow.colorRoyal.game;
 
 import java.util.Optional;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,13 +12,17 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import madpillow.colorRoyal.ColorRoyal;
 import madpillow.colorRoyal.PlayerUtils;
 import madpillow.colorRoyal.configUtils.GameMessageText;
 import madpillow.colorRoyal.configUtils.TextConfig;
+import madpillow.colorRoyal.skills.Decoy;
 import madpillow.colorRoyal.skills.Skill;
-import madpillow.colorRoyal.skills.Skills;
+import madpillow.colorRoyal.skills.SkillType;
+import net.citizensnpcs.api.event.NPCDamageByEntityEvent;
 
 public class GameEvent implements Listener {
 	@EventHandler
@@ -94,7 +100,7 @@ public class GameEvent implements Listener {
 			}
 
 			boolean isSkill = false;
-			for (Skills skills : Skills.values()) {
+			for (SkillType skills : SkillType.values()) {
 				if (skills.getMaterial() == e.getItem().getType()) {
 					isSkill = true;
 					break;
@@ -112,5 +118,68 @@ public class GameEvent implements Listener {
 				PlayerUtils.sendMessage(e.getPlayer(), "DEBUG-ERROR: このスキルを保有していません");
 			}
 		}
+	}
+
+	@EventHandler
+	public void onDamageNPC(NPCDamageByEntityEvent e) {
+		if (!(e.getDamager() instanceof Player)) {
+			return;
+		}
+
+		GameTeamListManager gameteamListManager = ColorRoyal.getPlugin().getGameManager().getGameTeamListManager();
+		Optional<GamePlayer> damager = gameteamListManager.getGamePlayerAtList((Player) e.getDamager());
+		if (!damager.isPresent()) {
+			return;
+		}
+
+		String name = e.getNPC().getName();
+		if (damager.get().getPlayer().getName().equalsIgnoreCase(name)) {
+			return;
+		}
+
+		damager.get().getPlayer().playSound(
+				damager.get().getPlayer().getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1, 2F);
+		e.getNPC().despawn();
+
+		Player player = Bukkit.getPlayer(name);
+		if (player == null) {
+			return;
+		}
+
+		Optional<GamePlayer> gamePlayer = ColorRoyal.getPlugin().getGameManager().getGameTeamListManager()
+				.getGamePlayerAtList(player);
+		PlayerUtils.sendMessage(player, TextConfig.getGameMessageText(GameMessageText.DestroyDecoy));
+		player.getInventory().addItem(new ItemStack(Material.COMPASS));
+		player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_PLACE, 0.3F, 1F);
+
+		Decoy decoy = null;
+		for (Skill skill : gamePlayer.get().getSkillList()) {
+			if (skill instanceof Decoy) {
+				decoy = (Decoy) skill;
+				break;
+			}
+		}
+		final Decoy decoySkill = decoy;
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				if (!ColorRoyal.getPlugin().getGameManager().isGameing()) {
+					cancel();
+					return;
+				}
+				if (decoySkill.isNull()) {
+					cancel();
+					return;
+				}
+				player.setCompassTarget(damager.get().getPlayer().getLocation());
+			}
+		}.runTaskTimer(ColorRoyal.getPlugin(), 0L, 20L);
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				player.getInventory().remove(Material.COMPASS);
+				decoySkill.destroy();
+			}
+		}.runTaskLater(ColorRoyal.getPlugin(), SkillType.Decoy.getCharge(20) * 20L);
 	}
 }

@@ -14,19 +14,13 @@ public class Glowing extends Skill {
 	}
 
 	@Override
-	protected void actionSkill() {
+	protected boolean actionSkill() {
 		GameManager gameManager = ColorRoyal.getPlugin().getGameManager();
 		gameManager.getGamePlayerList().stream()
 				.filter(entityPlayer -> gamePlayer.getNowTeam().getColor() != entityPlayer.getNowTeam().getColor())
 				.forEach(entityPlayer -> entityPlayer.getPlayer()
 						.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 5, 1)));
-	}
 
-	@Override
-	protected void setLoresInfo() {
-		loresInfo.add("右クリックで使用");
-		loresInfo.add("他チームのプレイヤーに5秒間発光を付与");
-		loresInfo.add("CT：" + coolTime + "秒");
+		return true;
 	}
-
 }

@@ -141,7 +141,7 @@ public class PlayerUtils {
 			}
 			tempLoc.add(x, 0, z);
 			if (tempLoc.getBlock().getType() != Material.AIR
-					|| tempLoc.add(0, 1, 0).getBlock().getType() != Material.AIR) {
+					|| tempLoc.clone().add(0, 1, 0).getBlock().getType() != Material.AIR) {
 				continue;
 			}
 			player.teleport(tempLoc);

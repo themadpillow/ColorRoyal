@@ -116,6 +116,11 @@ public class TextConfig {
 		case UntilStartChat:
 		case UntilStartSubTitle:
 		case PerformSkill:
+		case AllResetAnnounceSubTitle:
+		case AllResetAnnounceChat:
+		case AllResetIntervalSubTitle:
+		case AllResetIntervalChat:
+		case RemainingAttackCount:
 			return gameMessageMap.get(gameMessageText.toString()).replace("<VALUE>", values[0]);
 		default:
 			return gameMessageMap.get(gameMessageText.toString());

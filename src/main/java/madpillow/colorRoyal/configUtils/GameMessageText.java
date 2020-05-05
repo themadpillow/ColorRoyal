@@ -1,7 +1,7 @@
 package madpillow.colorRoyal.configUtils;
 
 public enum GameMessageText {
-	UntilStartChat, UntilStartTitle, UntilStartSubTitle, StartTitle, StartSubTitle, ReturnParentColor, AttackCT, DamageCTDamager, DamageCTTarget, PerformSkill, SkillCT, StopTitle, StopSubTitle, ChatPrefix, AllResetAnnounceTitle, AllResetAnnounceSubTitle, AllResetAnnounceChat, AllResetIntervalTitle, AllResetIntervalSubTitle, AllResetIntervalChat, AllResetTitle, AllResetChat;
+	UntilStartChat, UntilStartTitle, UntilStartSubTitle, StartTitle, StartSubTitle, ReturnParentColor, AttackCT, DamageCTDamager, DamageCTTarget, PerformSkill, SkillCT, StopTitle, StopSubTitle, ChatPrefix, AllResetAnnounceTitle, AllResetAnnounceSubTitle, AllResetAnnounceChat, AllResetIntervalTitle, AllResetIntervalSubTitle, AllResetIntervalChat, AllResetTitle, AllResetChat, RemainingAttackCount, AllColoredChat, DestroyDecoy;
 
 	public String getDefaultString() {
 		switch (this) {
@@ -49,6 +49,12 @@ public enum GameMessageText {
 			return "リセットされました！";
 		case AllResetChat:
 			return "リセットされました！";
+		case RemainingAttackCount:
+			return "残り：<VALUE>";
+		case AllColoredChat:
+			return "全員同じ色になったためゲーム終了がしました";
+		case DestroyDecoy:
+			return "デコイが破壊されました。コンパスが位置を指しています";
 		default:
 			throw new RuntimeException("不明なText");
 		}

@@ -17,7 +17,7 @@ public class Blindness extends Skill {
 	}
 
 	@Override
-	protected void actionSkill() {
+	protected boolean actionSkill() {
 		GameTeamListManager gameTeamListManager = ColorRoyal.getPlugin().getGameManager().getGameTeamListManager();
 		Player player = gamePlayer.getPlayer();
 
@@ -29,13 +29,7 @@ public class Blindness extends Skill {
 						.getColor())
 				.forEach(entityPlayer -> entityPlayer.get().getPlayer()
 						.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * 3, 1)));
-	}
 
-	@Override
-	protected void setLoresInfo() {
-		loresInfo.add("右クリックで使用");
-		loresInfo.add("半径10ブロック以内の");
-		loresInfo.add(" 他チームのプレイヤーに3秒間盲目付与");
-		loresInfo.add("CT：" + coolTime + "秒");
+		return true;
 	}
 }

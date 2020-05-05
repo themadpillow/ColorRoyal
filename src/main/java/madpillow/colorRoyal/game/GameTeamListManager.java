@@ -49,4 +49,15 @@ public class GameTeamListManager {
 
 		return Optional.empty();
 	}
+
+	public Optional<GamePlayer> getHardGamePlayerAtList(Player player) {
+		GameManager gameManager = ColorRoyal.getPlugin().getGameManager();
+		for (GamePlayer gamePlayer : gameManager.getGamePlayerList()) {
+			if (gamePlayer.getPlayer().getName().equals(player.getName())) {
+				return Optional.of(gamePlayer);
+			}
+		}
+
+		return Optional.empty();
+	}
 }
