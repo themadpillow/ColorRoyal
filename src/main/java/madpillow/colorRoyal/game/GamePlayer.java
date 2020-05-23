@@ -112,15 +112,18 @@ public class GamePlayer {
 		}
 	}
 
-	public void damage(GamePlayer damager) {
-		damager.setCanAttack(false);
+	public void attackCoolDown() {
+		setCanAttack(false);
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				damager.setCanAttack(true);
+				setCanAttack(true);
 			}
 		}.runTaskLater(ColorRoyal.getPlugin(), 3 * 20L);
+	}
 
+	public void damage(GamePlayer damager) {
+		damager.attackCoolDown();
 		this.changeTeam(damager.getNowTeam());
 		this.changeArmorColor(nowTeam);
 		this.invincible();

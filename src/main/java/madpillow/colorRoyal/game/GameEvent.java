@@ -131,6 +131,7 @@ public class GameEvent implements Listener {
 		if (!damager.isPresent()) {
 			return;
 		}
+		damager.get().attackCoolDown();
 
 		String name = e.getNPC().getName();
 		if (damager.get().getPlayer().getName().equalsIgnoreCase(name)) {
